@@ -40,7 +40,7 @@
         name: meta && meta.name ? meta.name : id
       });
       tx.oncomplete = function () { resolve(true); };
-      tx.onerror    function () { reject(tx.error); };
+      tx.onerror    = function () { reject(tx.error); };
     });
   }
 
@@ -60,168 +60,171 @@
       const tx = db.transaction(ATTACH_STORE, 'readwrite');
       tx.objectStore(ATTACH_STORE).delete(id);
       tx.oncomplete = function () { resolve(true); };
-      tx.onerror    function () { reject(tx.error); };
+      tx.onerror    = function () { reject(tx.error); };
     });
-      }
-/* ---------------- DOM ---------------- */
+  }
 
-const el = {
-  threadList:    document.getElementById('threadList'),
-  threadCount:   document.getElementById('threadCount'),
-  limitNote:     document.getElementById('limitNote'),
-  chatWho:       document.getElementById('chatWho'),
-  chatMessages:  document.getElementById('chatMessages'),
-  composerInput: document.getElementById('composerInput'),
-  sendBtn:       document.getElementById('sendBtn'),
-  newChatBtn:    document.getElementById('newChatBtn'),
-  deleteChatBtn: document.getElementById('deleteChatBtn'),
-  exportBtn:     document.getElementById('exportBtn'),
-  micDictateBtn: document.getElementById('micDictateBtn'),
-  micRecordBtn:  document.getElementById('micRecordBtn'),
-  photoBtn:      document.getElementById('photoBtn'),
-  videoBtn:      document.getElementById('videoBtn'),
-  fileBtn:       document.getElementById('fileBtn'),
-  fileInput:     document.getElementById('fileInput'),
-  photoInput:    document.getElementById('photoInput'),
-  videoInput:    document.getElementById('videoInput'),
-  recorderBar:   document.getElementById('recorderBar'),
-  recorderStatus:document.getElementById('recorderStatus'),
-  stopRecordBtn: document.getElementById('stopRecordBtn'),
-  pendingAttach: document.getElementById('pendingAttach')
-};
+  /* ---------------- DOM ---------------- */
 
-const ui = {
-  activeThreadId: null,
-  address: null,
-  pendingAttachment: null,
-  recorder: null,
-  recorderChunks: [],
-  recorderMode: null,
-  blobUrls: new Map(),
-  recognition: null,
-  dictating: false
-};
-
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-                  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-function fmtTime(iso) {
-  if (!iso) return '';
-  try { return new Date(iso).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
-  catch (_) { return ''; }
-}
-function fmtSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/(1024*1024)).toFixed(1) + ' MB';
-}
-function newAttachId() {
-  return 'at_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
-}
-function showRecorder(status, show) {
-  el.recorderStatus.textContent = status || 'Recording…';
-  el.recorderBar.classList.toggle('hidden', !show);
-}
-function setPendingAttachment(attach) {
-  ui.pendingAttachment = attach || null;
-  el.pendingAttach.textContent = attach ? ('· ' + attach.kind + ' ready') : '';
-}
-/* ---------------- attachment capture ---------------- */
-
-function startDictation() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { alert('Speech recognition is not supported in this browser.'); return; }
-  if (ui.dictating) { return; }
-  const rec = new SR();
-  rec.continuous = true;
-  rec.interimResults = true;
-  rec.lang = 'en-US';
-  let base = el.composerInput.value;
-  rec.onresult = function (e) {
-    let interim = '', final = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final += t; else interim += t;
-    }
-    el.composerInput.value = (base + ' ' + final + interim).trim();
-    el.composerInput.style.height = 'auto';
-    el.composerInput.style.height = Math.min(el.composerInput.scrollHeight, 160) + 'px';
-    if (final) base = el.composerInput.value;
+  const el = {
+    threadList:    document.getElementById('threadList'),
+    threadCount:   document.getElementById('threadCount'),
+    limitNote:     document.getElementById('limitNote'),
+    chatWho:       document.getElementById('chatWho'),
+    chatMessages:  document.getElementById('chatMessages'),
+    composerInput: document.getElementById('composerInput'),
+    sendBtn:       document.getElementById('sendBtn'),
+    newChatBtn:    document.getElementById('newChatBtn'),
+    deleteChatBtn: document.getElementById('deleteChatBtn'),
+    exportBtn:     document.getElementById('exportBtn'),
+    micDictateBtn: document.getElementById('micDictateBtn'),
+    micRecordBtn:  document.getElementById('micRecordBtn'),
+    photoBtn:      document.getElementById('photoBtn'),
+    videoBtn:      document.getElementById('videoBtn'),
+    fileBtn:       document.getElementById('fileBtn'),
+    fileInput:     document.getElementById('fileInput'),
+    photoInput:    document.getElementById('photoInput'),
+    videoInput:    document.getElementById('videoInput'),
+    recorderBar:   document.getElementById('recorderBar'),
+    recorderStatus:document.getElementById('recorderStatus'),
+    stopRecordBtn: document.getElementById('stopRecordBtn'),
+    pendingAttach: document.getElementById('pendingAttach')
   };
-  rec.onerror = function () { stopDictation(); };
-  rec.onend   = function () { ui.dictating = false; el.micDictateBtn.classList.remove('active'); };
-  ui.recognition = rec;
-  ui.dictating = true;
-  el.micDictateBtn.classList.add('active');
-  rec.start();
-}
-function stopDictation() {
-  if (ui.recognition) {
-    try { ui.recognition.stop(); } catch (_) {}
-  }
-  ui.dictating = false;
-  ui.recognition = null;
-  el.micDictateBtn.classList.remove('active');
-}
 
-async function startRecording(kind) {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia(
-      kind === 'video' ? { audio: true, video: { facingMode: 'environment' } }
-                       : { audio: true }
-    );
-    const mime = kind === 'video'
-      ? (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm')
-      : (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')      ? 'audio/webm;codecs=opus'      : 'audio/webm');
-    const rec = new MediaRecorder(stream, { mimeType: mime });
-    ui.recorderChunks = [];
-    ui.recorderMode = kind;
-    rec.ondataavailable = function (e) { if (e.data && e.data.size) ui.recorderChunks.push(e.data); };
-    rec.onstop = async function () {
-      stream.getTracks().forEach(function (t) { t.stop(); });
-      const blob = new Blob(ui.recorderChunks, { type: mime.split(';')[0] });
-      if (blob.size > 0) {
-        const id = newAttachId();
-        const kindLabel = kind === 'video' ? 'video' : 'audio';
-        try {
-          await putBlob(id, blob, { name: kindLabel + '-' + id });
-          setPendingAttachment({ id: id, kind: kindLabel, mime: blob.type, size: blob.size });
-        } catch (e) { alert('Could not store attachment.'); }
+  const ui = {
+    activeThreadId: null,
+    address: null,
+    pendingAttachment: null,
+    recorder: null,
+    recorderChunks: [],
+    recorderMode: null,
+    blobUrls: new Map(),
+    recognition: null,
+    dictating: false
+  };
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function fmtTime(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+    catch (_) { return ''; }
+  }
+  function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(1) + ' MB';
+  }
+  function newAttachId() {
+    return 'at_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  }
+  function showRecorder(status, show) {
+    el.recorderStatus.textContent = status || 'Recording…';
+    el.recorderBar.classList.toggle('hidden', !show);
+  }
+  function setPendingAttachment(attach) {
+    ui.pendingAttachment = attach || null;
+    el.pendingAttach.textContent = attach ? ('· ' + attach.kind + ' ready') : '';
+  }
+
+  /* ---------------- attachment capture ---------------- */
+
+  function startDictation() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Speech recognition is not supported in this browser.'); return; }
+    if (ui.dictating) { return; }
+    const rec = new SR();
+    rec.continuous = true;
+    rec.interimResults = true;
+    rec.lang = 'en-US';
+    let base = el.composerInput.value;
+    rec.onresult = function (e) {
+      let interim = '', final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t; else interim += t;
       }
-      showRecorder('', false);
-      ui.recorder = null;
-      ui.recorderMode = null;
+      el.composerInput.value = (base + ' ' + final + interim).trim();
+      el.composerInput.style.height = 'auto';
+      el.composerInput.style.height = Math.min(el.composerInput.scrollHeight, 160) + 'px';
+      if (final) base = el.composerInput.value;
     };
+    rec.onerror = function () { stopDictation(); };
+    rec.onend   = function () { ui.dictating = false; el.micDictateBtn.classList.remove('active'); };
+    ui.recognition = rec;
+    ui.dictating = true;
+    el.micDictateBtn.classList.add('active');
     rec.start();
-    ui.recorder = rec;
-    showRecorder(kind === 'video' ? 'Recording video… tap Stop when done.' : 'Recording audio… tap Stop when done.', true);
-  } catch (e) {
-    alert('Microphone / camera permission was denied or unavailable.');
   }
-}
-function stopRecording() {
-  if (ui.recorder && ui.recorder.state !== 'inactive') {
-    try { ui.recorder.stop(); } catch (_) {}
+  function stopDictation() {
+    if (ui.recognition) {
+      try { ui.recognition.stop(); } catch (_) {}
+    }
+    ui.dictating = false;
+    ui.recognition = null;
+    el.micDictateBtn.classList.remove('active');
   }
-}
 
-async function handleFilePicked(file) {
-  if (!file) return;
-  if (file.size > 20 * 1024 * 1024) {
-    alert('File is larger than 20 MB. Choose a smaller one.');
-    return;
+  async function startRecording(kind) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia(
+        kind === 'video' ? { audio: true, video: { facingMode: 'environment' } }
+                         : { audio: true }
+      );
+      const mime = kind === 'video'
+        ? (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm')
+        : (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')      ? 'audio/webm;codecs=opus'      : 'audio/webm');
+      const rec = new MediaRecorder(stream, { mimeType: mime });
+      ui.recorderChunks = [];
+      ui.recorderMode = kind;
+      rec.ondataavailable = function (e) { if (e.data && e.data.size) ui.recorderChunks.push(e.data); };
+      rec.onstop = async function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        const blob = new Blob(ui.recorderChunks, { type: mime.split(';')[0] });
+        if (blob.size > 0) {
+          const id = newAttachId();
+          const kindLabel = kind === 'video' ? 'video' : 'audio';
+          try {
+            await putBlob(id, blob, { name: kindLabel + '-' + id });
+            setPendingAttachment({ id: id, kind: kindLabel, mime: blob.type, size: blob.size });
+          } catch (e) { alert('Could not store attachment.'); }
+        }
+        showRecorder('', false);
+        ui.recorder = null;
+        ui.recorderMode = null;
+      };
+      rec.start();
+      ui.recorder = rec;
+      showRecorder(kind === 'video' ? 'Recording video… tap Stop when done.' : 'Recording audio… tap Stop when done.', true);
+    } catch (e) {
+      alert('Microphone / camera permission was denied or unavailable.');
+    }
   }
-  const id = newAttachId();
-  const kind = file.type.startsWith('image/') ? 'image'
-             : file.type.startsWith('video/') ? 'video'
-             : file.type.startsWith('audio/') ? 'audio'
-             : 'file';
-  try {
-    await putBlob(id, file, { name: file.name });
-    setPendingAttachment({ id: id, kind: kind, mime: file.type, size: file.size, name: file.name });
-  } catch (e) { alert('Could not store attachment.'); }
-}
+  function stopRecording() {
+    if (ui.recorder && ui.recorder.state !== 'inactive') {
+      try { ui.recorder.stop(); } catch (_) {}
+    }
+  }
+
+  async function handleFilePicked(file) {
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      alert('File is larger than 20 MB. Choose a smaller one.');
+      return;
+    }
+    const id = newAttachId();
+    const kind = file.type.startsWith('image/') ? 'image'
+               : file.type.startsWith('video/') ? 'video'
+               : file.type.startsWith('audio/') ? 'audio'
+               : 'file';
+    try {
+      await putBlob(id, file, { name: file.name });
+      setPendingAttachment({ id: id, kind: kind, mime: file.type, size: file.size, name: file.name });
+    } catch (e) { alert('Could not store attachment.'); }
+  }
+
   /* ---------------- render ---------------- */
 
   function renderThreads() {
