@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="BROD — a local chat shell that enforces a conversation contract." />
+  <title>BROD</title>
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mark">🜂</div>
+        <div>
+          <div class="brand-title">BROD</div>
+          <div class="brand-subtitle">Conversation Contract v1.0</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="exportBtn" class="secondary-btn" type="button">Export</button>
+        <button id="newChatBtn" class="primary-btn" type="button">New chat</button>
+      </div>
+    </header>
+
+    <div class="body-wrap">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <h3>THREADS</h3>
+          <span id="threadCount" class="limit-note"></span>
+        </div>
+        <div id="threadList" class="thread-list"></div>
+        <div id="limitNote" class="limit-note"></div>
+      </aside>
+
+      <main class="chat-panel">
+        <div class="chat-header">
+          <span class="who" id="chatWho">No chat selected</span>
+          <button id="deleteChatBtn" class="danger-btn" type="button" disabled>Delete</button>
+        </div>
+
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <div class="composer">
+          <textarea id="composerInput" rows="1" placeholder="Type a message…"
+                    aria-label="Message"></textarea>
+          <button id="sendBtn" class="primary-btn" type="button" disabled>Send</button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="./core/brod-conversation-contract.js"></script>
+  <script src="./core/brod-chat-store.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
