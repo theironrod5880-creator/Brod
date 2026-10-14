@@ -4,11 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
-  <meta name="description" content="BROD — a local chat shell that enforces a conversation contract." />
   <title>BROD</title>
   <link rel="manifest" href="./manifest.json" />
   <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="./icon.svg" />
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -18,14 +16,28 @@
         <div class="brand-mark">🜂</div>
         <div>
           <div class="brand-title">BROD</div>
-          <div class="brand-subtitle">Conversation Contract v1.0</div>
+          <div class="brand-subtitle" id="modelBadge">demo mode</div>
         </div>
       </div>
       <div class="header-actions">
+        <button id="settingsBtn" class="secondary-btn" type="button">Settings</button>
         <button id="exportBtn" class="secondary-btn" type="button">Export</button>
         <button id="newChatBtn" class="primary-btn" type="button">New chat</button>
       </div>
     </header>
+
+    <div id="settingsPanel" class="panel hidden">
+      <h3>Gemini API key</h3>
+      <p class="muted" style="font-size:.82rem;margin:0 0 10px 0;">
+        Paste your key from aistudio.google.com/apikey. It is stored only on this device.
+      </p>
+      <input id="apiKeyInput" type="password" placeholder="AIza..." autocomplete="off" />
+      <div class="button-row">
+        <button id="saveKeyBtn" class="primary-btn" type="button">Save</button>
+        <button id="clearKeyBtn" class="secondary-btn" type="button">Clear</button>
+      </div>
+      <p id="settingsStatus" class="muted" style="font-size:.8rem;margin-top:8px;"></p>
+    </div>
 
     <div class="body-wrap">
       <aside class="sidebar">
@@ -42,7 +54,6 @@
           <span class="who" id="chatWho">No chat selected</span>
           <button id="deleteChatBtn" class="danger-btn" type="button" disabled>Delete</button>
         </div>
-
         <div id="chatMessages" class="chat-messages"></div>
 
         <div id="recorderBar" class="recorder-bar hidden">
@@ -52,15 +63,15 @@
 
         <div class="composer-wrap">
           <div class="toolbar">
-            <button id="micDictateBtn" class="tool-btn" type="button" title="Dictate">🎤</button>
-            <button id="micRecordBtn"  class="tool-btn" type="button" title="Record audio">🎙️</button>
-            <button id="photoBtn"      class="tool-btn" type="button" title="Photo">📷</button>
-            <button id="videoBtn"      class="tool-btn" type="button" title="Video">🎥</button>
-            <button id="fileBtn"       class="tool-btn" type="button" title="File">📎</button>
+            <button id="micDictateBtn" class="tool-btn" type="button">🎤</button>
+            <button id="micRecordBtn"  class="tool-btn" type="button">🎙️</button>
+            <button id="photoBtn"      class="tool-btn" type="button">📷</button>
+            <button id="videoBtn"      class="tool-btn" type="button">🎥</button>
+            <button id="fileBtn"       class="tool-btn" type="button">📎</button>
             <span id="pendingAttach" class="pending-attach"></span>
           </div>
           <div class="composer">
-            <textarea id="composerInput" rows="1" placeholder="Type a message…" aria-label="Message"></textarea>
+            <textarea id="composerInput" rows="1" placeholder="Type a message…"></textarea>
             <button id="sendBtn" class="primary-btn" type="button" disabled>Send</button>
           </div>
         </div>
@@ -68,7 +79,7 @@
     </div>
   </div>
 
-  <input type="file" id="fileInput" accept="*/*" style="display:none" />
+  <input type="file" id="fileInput"  accept="*/*"     style="display:none" />
   <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
   <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none" />
 
