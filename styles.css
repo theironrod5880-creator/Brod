@@ -1,0 +1,55 @@
+:root{
+  --bg:#0b1020;
+  --panel:#111827;
+  --panel-alt:#1f2937;
+  --card:#0f172a;
+  --text:#e5e7eb;
+  --muted:#a1a1aa;
+  --line:#334155;
+  --primary:#f59e0b;
+  --primary-strong:#d97706;
+  --danger:#ef4444;
+  --user-bg:#1e293b;
+  --ai-bg:#0f172a;
+  --shadow:rgba(0,0,0,0.28);
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;padding:0;
+  background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  height:100%;
+}
+#app{
+  max-width:900px;margin:0 auto;padding:0 12px 24px;
+  height:100vh;display:flex;flex-direction:column;
+}
+
+/* topbar */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;padding:14px 4px;border-bottom:1px solid var(--line);
+}
+.brand-wrap{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#f59e0b,#7c2d12);
+  font-size:20px;
+}
+.brand-title{font-size:1.05rem;font-weight:800;letter-spacing:.4px}
+.brand-subtitle{color:var(--muted);font-size:.75rem}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+button{
+  font-family:inherit;
+  padding:9px 13px;font-weight:700;font-size:.9rem;
+  border-radius:10px;border:none;cursor:pointer;
+  transition:opacity .15s ease, transform .1s ease;
+}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;cursor:not-allowed}
+
+.primary-btn{background:linear-gradient(135deg,var(--primary),var(--primary-strong));color:#111827}
+.secondary-btn{background:var(--panel-alt);color:var(--text);border:1px solid var(--line)}
+.danger-btn{background:rgba(239,68,68,.15);color:#fecaca;border:1px solid rgba(239,68,68,.35)}
