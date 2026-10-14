@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="BROD">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="0.55" stop-color="#f59e0b"/>
+      <stop offset="1" stop-color="#7c2d12"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+
+  <path d="M256 76
+           C 302 138, 356 194, 338 268
+           C 326 320, 290 350, 256 350
+           C 222 350, 186 320, 174 268
+           C 156 194, 210 138, 256 76 Z"
+        fill="url(#flame)"/>
+
+  <path d="M256 150
+           C 284 188, 310 222, 298 268
+           C 292 300, 272 316, 256 316
+           C 240 316, 220 300, 214 268
+           C 202 222, 228 188, 256 150 Z"
+        fill="#fde68a" opacity="0.85"/>
+
+  <rect x="200" y="382" width="112" height="14" rx="7" fill="#334155"/>
+</svg>
