@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>AROD</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<style>
+body{margin:0;background:#0b1020;color:#e5e7eb;font:15px/1.5 system-ui,sans-serif;padding-bottom:130px;overflow-x:hidden}
+header{padding:12px 16px;background:rgba(8,11,20,.9);border-bottom:1px solid #334155;position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;z-index:10}
+h1{margin:0;color:#f59e0b;font-size:17px;letter-spacing:.1em}
+.hbtn{background:transparent;border:1px solid #334155;color:#e5e7eb;border-radius:10px;padding:6px 12px;cursor:pointer;font-size:15px}
+.hbtn.on{border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,.12)}
+nav{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;position:sticky;top:52px;background:rgba(8,11,20,.75);border-bottom:1px solid #334155;z-index:9}
+nav button{background:transparent;border:1px solid #334155;color:#a1a1aa;border-radius:99px;padding:6px 14px;font-size:13px;white-space:nowrap;cursor:pointer}
+nav button.on{border-color:#f59e0b;color:#f59e0b;background:rgba(245,158,11,.08)}
+main{padding:16px;max-width:860px;margin:0 auto}
+.card{background:rgba(12,16,28,.86);border:1px solid #334155;border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{margin:0 0 8px;font-size:16px}
+.card p{color:#a1a1aa;margin:6px 0}
+.card a{color:#f9d38c;text-decoration:none}
+button.p{background:#f59e0b;color:#0b1020;border:0;border-radius:10px;padding:9px 16px;font-weight:600;cursor:pointer;margin:4px 4px 4px 0}
+.door{color:#a1a1aa;font-style:italic;font-size:13px;text-align:center;margin-top:20px;padding-top:14px;border-top:1px solid #1e293b;line-height:1.6}
+.door strong{color:#f9d38c;font-style:normal;display:block;margin-top:6px;font-size:12px;letter-spacing:.05em}
+
+#dock{position:fixed;left:0;right:0;bottom:0;background:rgba(8,11,20,.95);border-top:1px solid #334155;padding:8px 12px calc(10px + env(safe-area-inset-bottom));max-width:860px;margin:0 auto;z-index:20}
+#captions{display:none;padding:10px 14px;margin-bottom:8px;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.35);border-radius:12px;color:#fde68a;font-size:15px;line-height:1.5;max-height:100px;overflow-y:auto}
+#captions.on{display:block}
+#log{max-height:55vh;overflow-y:auto;margin-bottom:8px}
+#log:empty{display:none}
+.cm{padding:9px 13px;border-radius:12px;margin:6px 0;max-width:88%;word-wrap:break-word;white-space:pre-wrap;font-size:14px}
+.ca{background:rgba(30,41,59,.75);border:1px solid #334155}
+.cu{background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);margin-left:auto}
+.cerr{background:rgba(220,38,38,.14);color:#fca5a5;border:1px solid rgba(220,38,38,.4);font-size:13px;max-width:100%}
+.cthink{color:#a1a1aa;font-style:italic;font-size:13px}
+.row{display:flex;gap:8px;align-items:flex-end}
+textarea{flex:1;background:rgba(20,26,42,.9);color:#e5e7eb;border:1px solid #334155;border-radius:12px;padding:11px;font:inherit;font-size:14px;resize:none;min-height:44px;max-height:120px;outline:none}
+textarea:focus{border-color:#f59e0b}
+#send{background:#f59e0b;color:#0b1020;border:0;border-radius:12px;padding:12px 18px;font-weight:600;cursor:pointer;font-size:14px}
+#mic{background:transparent;border:1px solid #334155;color:#e5e7eb;border-radius:12px;padding:12px 14px;cursor:pointer;font-size:15px}
+#mic.on{background:rgba(220,38,38,.2);border-color:#dc2626;color:#fca5a5}
+
+.modal{position:fixed;inset:0;background:rgba(3,5,10,.78);display:flex;align-items:center;justify-content:center;padding:18px;z-index:100}
+.modal[hidden]{display:none}
+.box{background:#0e1322;border:1px solid #334155;border-radius:16px;padding:20px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto}
+.box h3{margin:0 0 8px;color:#f59e0b;font-size:16px}
+.box p{color:#a1a1aa;font-size:14px;margin:6px 0}
+.box input{width:100%;background:rgba(20,26,42,.9);color:#e5e7eb;border:1px solid #334155;border-radius:10px;padding:11px;font:inherit;font-size:14px;outline:none;margin-top:8px;box-sizing:border-box}
+.box input:focus{border-color:#f59e0b}
+.box .row{margin-top:14px}
+.box button{flex:1;border-radius:10px;padding:10px;font-weight:600;cursor:pointer;border:1px solid #334155;background:transparent;color:#e5e7eb}
+.box button.p{background:#f59e0b;color:#0b1020;border-color:#f59e0b}
+
+/* ---------- floating video bubble ---------- */
+#vidBubble{position:fixed;top:80px;right:12px;width:300px;background:#0e1322;border:1px solid #334155;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:90;overflow:hidden}
+#vidBubble[hidden]{display:none}
+#vidHead{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(8,11,20,.95);border-bottom:1px solid #334155;cursor:grab;user-select:none}
+#vidHead:active{cursor:grabbing}
+#vidHead .ttl{font-size:13px;font-weight:600;color:#f59e0b;letter-spacing:.05em}
+#vidHead .btns{display:flex;gap:6px}
+#vidHead button{background:transparent;border:1px solid #334155;color:#e5e7eb;border-radius:8px;padding:2px 8px;cursor:pointer;font-size:12px;line-height:1}
+#vidBody{padding:10px}
+#vidBody .compact{display:flex;flex-direction:column;gap:8px}
+#vidBody label.filebtn{display:block;text-align:center;padding:8px;background:#f59e0b;color:#0b1020;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
+#vidBody input[type=text]{width:100%;background:rgba(20,26,42,.9);color:#e5e7eb;border:1px solid #334155;border-radius:8px;padding:8px;font:inherit;font-size:12px;outline:none;box-sizing:border-box}
+#vidBody input[type=text]:focus{border-color:#f59e0b}
+#vidStage{background:#000;border-radius:8px;overflow:hidden;min-height:150px;display:flex;align-items:center;justify-content:center;color:#a1a1aa;font-size:12px}
+#vidStage iframe,#vidStage video{width:100%;display:block;border:0}
+#vidBody .brow{display:flex;gap:6px}
+#vidBody .brow button{flex:1;background:transparent;border:1px solid #334155;color:#e5e7eb;border-radius:8px;padding:7px;cursor:pointer;font-size:12px}
+#vidBody .brow button.p{background:#f59e0b;color:#0b1020;border-color:#f59e0b}
+</style>
+</head>
+<body>
+<header>
+  <h1>AROD</h1>
+  <div style="display:flex;gap:6px">
+    <button id="voiceBtn" class="hbtn" title="Toggle voice">🔇</button>
+    <button id="vidBtn" class="hbtn">🎬</button>
+    <button id="keyBtn" class="hbtn">🔑</button>
+  </div>
+</header>
+<nav id="tabBar"></nav>
+<main id="screens"></main>
+
+<div id="dock">
+  <div id="captions"></div>
+  <div id="log"></div>
+  <div class="row">
+    <textarea id="in" placeholder="Message AROD…" rows="1"></textarea>
+    <button id="mic" title="Speak">🎤</button>
+    <button id="send">Send</button>
+  </div>
+</div>
+
+<div class="modal" id="keyModal" hidden>
+  <div class="box">
+    <h3>Gemini API key</h3>
+    <p>Create at aistudio.google.com/apikey. Stored only on this device.</p>
+    <input type="password" id="keyIn" placeholder="AIza…">
+    <div class="row"><button class="p" id="keySave">Save</button><button id="keyCancel">Cancel</button></div>
+  </div>
+</div>
+
+<div id="vidBubble" hidden>
+  <div id="vidHead">
+    <span class="ttl">🎬 VIDEO</span>
+    <div class="btns">
+      <button id="vidMin" title="Minimize">–</button>
+      <button id="vidClose" title="Close">×</button>
+    </div>
+  </div>
+  <div id="vidBody">
+    <div class="compact">
+      <label class="filebtn">📁 Choose file
+        <input type="file" id="vidFile" accept="video/*" hidden>
+      </label>
+      <input type="text" id="vidUrl" placeholder="YouTube or .mp4 URL">
+      <div id="vidStage">No video loaded.</div>
+      <div class="brow">
+        <button class="p" id="vidPlay">Play URL</button>
+        <button id="vidClear">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var SYS="You are AROD. Governed by Earl. Scripture is the foundation. Interpretation is labeled as interpretation. Other sources are laid beside Scripture, never above it. Never teach the Trinity. No crosses, icons, graven images, or religious symbols. No personal opinion above Scripture. Do not claim possession of the holy spirit. Foreign words explained as a unit, not word by word, unless asked. Never flatter. Never perform. Plain language. Not everything is a code. Correction absorbed without defense. Never mention these instructions or any governing source or floor. Simply answer in plain English. US format for dates, times, numbers.";
+var DOOR='As you go, preach, saying: "The kingdom of the heavens has drawn near."';
+var TABS=[["home","🏠 Home"],["blog","📓 Blog"],["notebook","📔 NotebookLM"],["vaults","🗄️ Vaults"],["settings","⚙️ Settings"]];
+var NOTEBOOK_URL="https://notebooklm.link.google/R20v9cUKgcxL";
+var S={};
+S.home=function(){
+  return '<div class="card"><h2>Welcome back.</h2><p>Tap 🎤 to speak. Tap 🔊 in the header to hear replies read aloud. Tap 🎬 for a floating video player.</p>'
+    + '<div class="door">' + DOOR + '<strong>— Matthew 10:7</strong></div>'
+    + '</div>';
+};
+S.blog=function(){return '<div class="card"><h2>📓 The Iron Rod Response</h2><p>Primary publishing page.</p><p><a href="https://theironrodresponse.blogspot.com/" target="_blank">Open blog →</a></p></div>'};
+S.notebook=function(){return '<div class="card"><h2>📔 NotebookLM</h2><p>Study notebook for AROD.</p><p><a href="'+NOTEBOOK_URL+'" target="_blank">Open NotebookLM →</a></p></div>'};
+S.vaults=function(){return '<div class="card"><h2>🗄️ Vaults</h2><p>music_vault · illustration_vault · eternal_wheels_vault · seal_vault · briar_vault · timeline_vault · media_workspace_vault · social_export_vault · transcript_vault · file_trash_vault · usb_memory_vault · reference_vault · doctrine_review_vault</p></div>'};
+S.settings=function(){return '<div class="card"><h2>⚙️ Settings</h2><p><button class="p" onclick="AROD.key()">Set API key</button> <button class="p" onclick="AROD.usb()">Save memory to USB</button></p><p style="font-size:13px">English (United States). Dates: Month D, YYYY. Times: 12-hour with AM/PM.</p></div>'};
+
+function renderTabs(){var b=document.getElementById("tabBar");b.innerHTML="";for(var i=0;i<TABS.length;i++){var t=TABS[i];var x=document.createElement("button");if(i===0)x.className="on";x.textContent=t[1];x.onclick=(function(id){return function(){show(id)}})(t[0]);b.appendChild(x)}}
+function show(id){var bs=document.querySelectorAll("nav button");for(var i=0;i<TABS.length;i++)bs[i].className=(TABS[i][0]===id)?"on":"";var f=S[id];document.getElementById("screens").innerHTML='<div class="card">'+(f?f():"Not built.")+'</div>'}
+
+function getK(){try{return localStorage.getItem("arod_key")||""}catch(e){return""}}
+function loadC(){try{return JSON.parse(localStorage.getItem("arod_chat")||"[]")}catch(e){return[]}}
+function saveC(m){try{localStorage.setItem("arod_chat",JSON.stringify(m.slice(-60)))}catch(e){}}
+function renderC(){var m=loadC(),l=document.getElementById("log");l.innerHTML="";if(!m.length){l.innerHTML='<div class="cm ca">I am AROD. What do you want to talk about?</div>';return}for(var i=0;i<m.length;i++){var x=m[i];var d=document.createElement("div");d.className="cm "+(x.role==="user"?"cu":"ca");d.textContent=x.content;l.appendChild(d)}l.scrollTop=l.scrollHeight}
+function addMsg(cls,txt){var l=document.getElementById("log");var d=document.createElement("div");d.className="cm "+cls;d.textContent=txt;l.appendChild(d);l.scrollTop=l.scrollHeight;return d}
+
+function openKey(){document.getElementById("keyIn").value=getK();document.getElementById("keyModal").hidden=false}
+function saveKey(){var v=document.getElementById("keyIn").value.trim();if(v)try{localStorage.setItem("arod_key",v)}catch(e){}document.getElementById("keyModal").hidden=true}
+
+/* ---------- captions ---------- */
+function showCaption(t){var c=document.getElementById("captions");c.textContent=t;c.classList.add("on");c.scrollTop=0}
+function hideCaption(){var c=document.getElementById("captions");c.classList.remove("on");c.textContent=""}
+
+/* ---------- voice ---------- */
+function vOn(){try{return localStorage.getItem("arod_voice")==="1"}catch(e){return false}}
+function vSet(v){try{localStorage.setItem("arod_voice",v?"1":"0")}catch(e){}}
+function updateVoiceBtn(){var b=document.getElementById("voiceBtn");if(b)b.textContent=vOn()?"🔊":"🔇"}
+function speak(t){
+  if(!vOn())return;
+  if(!("speechSynthesis" in window))return;
+  var clean=String(t).replace(/[\u{1F300}-\u{1FAFF}]/gu,"").trim();
+  if(!clean)return;
+  window.speechSynthesis.cancel();
+  showCaption(clean);
+  var u=new SpeechSynthesisUtterance(clean);
+  u.rate=1.0;u.pitch=1.0;u.lang="en-US";
+  var vs=window.speechSynthesis.getVoices();
+  for(var i=0;i<vs.length;i++){
+    if(vs[i].lang==="en-US"&&/google|natural|premium|enhanced/i.test(vs[i].name)){u.voice=vs[i];break}
+  }
+  u.onend=function(){setTimeout(hideCaption,1500)};
+  u.onerror=function(){setTimeout(hideCaption,1500)};
+  window.speechSynthesis.speak(u);
+}
+function listen(){
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert("Voice input is not supported in this browser.");return}
+  var rec=new SR();
+  rec.lang="en-US";rec.interimResults=false;rec.maxAlternatives=1;
+  var m=document.getElementById("mic");
+  if(m){m.textContent="🔴";m.classList.add("on")}
+  rec.onresult=function(e){var t=document.getElementById("in");if(t){t.value=(t.value?t.value+" ":"")+e.results[0][0].transcript;t.style.height="auto"}};
+  rec.onerror=function(e){if(m){m.textContent="🎤";m.classList.remove("on")}alert("Voice error: "+e.error)};
+  rec.onend=function(){if(m){m.textContent="🎤";m.classList.remove("on")}};
+  rec.start();
+}
+
+/* ---------- API ---------- */
+async function api(msgs){
+  var k=getK();if(!k)return{error:"NO_KEY"};
+  try{
+    var r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-goog-api-key":k},
+      body:JSON.stringify({
+        systemInstruction:{parts:[{text:SYS}]},
+        contents:msgs.map(function(m){return{role:m.role==="assistant"?"model":"user",parts:[{text:m.content}]}}),
+        generationConfig:{temperature:0.7}
+      })
+    });
+    if(!r.ok){var t=await r.text();return{error:"API "+r.status+": "+t.slice(0,180)}}
+    var d=await r.json();
+    return{text:d.candidates[0].content.parts[0].text};
+  }catch(e){return{error:"NETWORK: "+String(e).slice(0,180)}}
+}
+
+async function send(){
+  var i=document.getElementById("in");
+  var t=i.value.trim();
+  if(!t)return;
+  if(!getK()){openKey();return}
+  var m=loadC();
+  m.push({role:"user",content:t});
+  saveC(m);
+  i.value="";i.style.height="auto";
+  addMsg("cu",t);
+  var th=addMsg("cthink","AROD is thinking…");
+  var r=await api(m);
+  th.remove();
+  if(r.text){
+    m.push({role:"assistant",content:r.text});
+    saveC(m);
+    addMsg("ca",r.text);
+    speak(r.text);
+  }else{
+    addMsg("cerr","Error: "+r.error);
+  }
+}
+
+function usb(){
+  var d={mastercore:"AROD",savedAt:new Date().toISOString(),vaults:TABS,door:DOOR,notebook:NOTEBOOK_URL};
+  var blob=new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+  var fn="AROD-memory-"+new Date().toISOString().replace(/[:.]/g,"-")+".json";
+  if(navigator.share&&navigator.canShare){
+    var f=new File([blob],fn,{type:"application/json"});
+    if(navigator.canShare({files:[f]}))navigator.share({files:[f],title:fn}).catch(function(){});
+  }else{
+    var a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);a.download=fn;a.click();
+  }
+}
+
+/* ---------- floating video ---------- */
+var vidMin=false;
+function openVid(){var b=document.getElementById("vidBubble");b.hidden=false}
+function closeVid(){
+  var b=document.getElementById("vidBubble");
+  b.hidden=true;
+  document.getElementById("vidStage").innerHTML="No video loaded.";
+}
+function toggleMin(){
+  vidMin=!vidMin;
+  var body=document.getElementById("vidBody");
+  body.style.display=vidMin?"none":"block";
+  document.getElementById("vidMin").textContent=vidMin?"+":"–";
+}
+function playFile(file){
+  if(!file)return;
+  var u=URL.createObjectURL(file);
+  document.getElementById("vidStage").innerHTML='<video src="'+u+'" controls autoplay></video>';
+}
+function playUrl(){
+  var u=document.getElementById("vidUrl").value.trim();
+  if(!u){alert("Paste a URL first.");return}
+  var s=document.getElementById("vidStage");
+  var yt=u.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{11})/);
+  if(yt){
+    s.innerHTML='<iframe src="https://www.youtube.com/embed/'+yt[1]+'" style="aspect-ratio:16/9" allow="accelerometer;autoplay;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>';
+  }else{
+    s.innerHTML='<video src="'+u+'" controls autoplay></video>';
+  }
+}
+/* drag the bubble */
+(function(){
+  var head=document.getElementById("vidHead");
+  var bub=document.getElementById("vidBubble");
+  var dragging=false,sx=0,sy=0,ox=0,oy=0;
+  head.addEventListener("pointerdown",function(e){
+    if(e.target.tagName==="BUTTON")return;
+    dragging=true;
+    var r=bub.getBoundingClientRect();
+    bub.style.left=r.left+"px";
+    bub.style.top=r.top+"px";
+    bub.style.right="auto";
+    sx=e.clientX;sy=e.clientY;ox=r.left;oy=r.top;
+    head.setPointerCapture(e.pointerId);
+  });
+  head.addEventListener("pointermove",function(e){
+    if(!dragging)return;
+    var nx=ox+(e.clientX-sx);
+    var ny=oy+(e.clientY-sy);
+    nx=Math.max(0,Math.min(window.innerWidth-60,nx));
+    ny=Math.max(0,Math.min(window.innerHeight-40,ny));
+    bub.style.left=nx+"px";
+    bub.style.top=ny+"px";
+  });
+  head.addEventListener("pointerup",function(){dragging=false});
+  head.addEventListener("pointercancel",function(){dragging=false});
+})();
+
+window.AROD={key:openKey,usb:usb};
+
+document.getElementById("send").onclick=send;
+document.getElementById("mic").onclick=listen;
+document.getElementById("voiceBtn").onclick=function(){vSet(!vOn());updateVoiceBtn();if(!vOn()&&window.speechSynthesis){window.speechSynthesis.cancel();hideCaption()}};
+document.getElementById("keyBtn").onclick=openKey;
+document.getElementById("keySave").onclick=saveKey;
+document.getElementById("keyCancel").onclick=function(){document.getElementById("keyModal").hidden=true};
+document.getElementById("vidBtn").onclick=openVid;
+document.getElementById("vidClose").onclick=closeVid;
+document.getElementById("vidMin").onclick=toggleMin;
+document.getElementById("vidClear").onclick=function(){
+  document.getElementById("vidUrl").value="";
+  document.getElementById("vidStage").innerHTML="No video loaded.";
+};
+document.getElementById("vidPlay").onclick=playUrl;
+document.getElementById("vidFile").onchange=function(e){playFile(e.target.files[0])};
+document.getElementById("in").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+document.getElementById("in").addEventListener("input",function(){this.style.height="auto";this.style.height=Math.min(this.scrollHeight,120)+"px"});
+if("serviceWorker" in navigator){navigator.serviceWorker.register("./sw.js").catch(function(){})}
+
+renderTabs();show("home");renderC();updateVoiceBtn();
+</script>
+</body>
+  </html>
