@@ -171,3 +171,10 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .attach-file a{color:#f9d38c;text-decoration:none;font-size:.88rem}
 .attach-missing{color:var(--muted);font-size:.8rem;font-style:italic}
 .msg-text{white-space:pre-wrap;word-wrap:break-word}
+
+/* settings */
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:16px}
+.panel.hidden{display:none}
+.panel h3{margin:0 0 10px 0;font-size:1rem}
+.panel input[type="password"]{width:100%;background:#0b1220;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 13px;font-family:inherit;font-size:.94rem;outline:none}
+.button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
