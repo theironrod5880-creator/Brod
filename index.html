@@ -45,14 +45,32 @@
 
         <div id="chatMessages" class="chat-messages"></div>
 
-        <div class="composer">
-          <textarea id="composerInput" rows="1" placeholder="Type a message…"
-                    aria-label="Message"></textarea>
-          <button id="sendBtn" class="primary-btn" type="button" disabled>Send</button>
+        <div id="recorderBar" class="recorder-bar hidden">
+          <span id="recorderStatus">Recording…</span>
+          <button id="stopRecordBtn" class="danger-btn" type="button">Stop</button>
+        </div>
+
+        <div class="composer-wrap">
+          <div class="toolbar">
+            <button id="micDictateBtn" class="tool-btn" type="button" title="Dictate">🎤</button>
+            <button id="micRecordBtn"  class="tool-btn" type="button" title="Record audio">🎙️</button>
+            <button id="photoBtn"      class="tool-btn" type="button" title="Photo">📷</button>
+            <button id="videoBtn"      class="tool-btn" type="button" title="Video">🎥</button>
+            <button id="fileBtn"       class="tool-btn" type="button" title="File">📎</button>
+            <span id="pendingAttach" class="pending-attach"></span>
+          </div>
+          <div class="composer">
+            <textarea id="composerInput" rows="1" placeholder="Type a message…" aria-label="Message"></textarea>
+            <button id="sendBtn" class="primary-btn" type="button" disabled>Send</button>
+          </div>
         </div>
       </main>
     </div>
   </div>
+
+  <input type="file" id="fileInput" accept="*/*" style="display:none" />
+  <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
+  <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none" />
 
   <script src="./core/brod-conversation-contract.js"></script>
   <script src="./core/brod-chat-store.js"></script>
