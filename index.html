@@ -1,90 +1,857 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>BROD</title>
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" href="./icon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="./styles.css" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#0f172a" />
+<title>BROD</title>
+<style>
+:root{--bg:#0b1020;--panel:#111827;--panel-alt:#1f2937;--card:#0f172a;--text:#e5e7eb;--muted:#a1a1aa;--line:#334155;--primary:#f59e0b;--primary-strong:#d97706;--danger:#ef4444;--user-bg:#1e293b;--ai-bg:#0f172a;--shadow:rgba(0,0,0,0.28)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;height:100%}
+#app{max-width:900px;margin:0 auto;padding:0 12px 24px;height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 4px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand-wrap{display:flex;align-items:center;gap:10px}
+.brand-mark{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#f59e0b,#7c2d12);font-size:20px}
+.brand-title{font-size:1.05rem;font-weight:800;letter-spacing:.4px}
+.brand-subtitle{color:var(--muted);font-size:.75rem}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+button{font-family:inherit;padding:9px 13px;font-weight:700;font-size:.9rem;border-radius:10px;border:none;cursor:pointer;transition:opacity .15s ease,transform .1s ease}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary-btn{background:linear-gradient(135deg,var(--primary),var(--primary-strong));color:#111827}
+.secondary-btn{background:var(--panel-alt);color:var(--text);border:1px solid var(--line)}
+.danger-btn{background:rgba(239,68,68,.15);color:#fecaca;border:1px solid rgba(239,68,68,.35)}
+.body-wrap{display:grid;grid-template-columns:240px 1fr;gap:14px;flex:1;min-height:0;padding-top:12px}
+.sidebar{display:flex;flex-direction:column;gap:10px;min-height:0}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between}
+.sidebar-header h3{margin:0;font-size:.9rem;color:var(--muted);font-weight:700;letter-spacing:.5px}
+.thread-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:2px}
+.thread-item{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border-color .15s ease;position:relative}
+.thread-item:hover{border-color:#475569}
+.thread-item.active{border-color:rgba(245,158,11,.55);background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02))}
+.thread-item .t-title{font-weight:700;font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:20px}
+.thread-item .t-meta{color:var(--muted);font-size:.72rem;margin-top:2px}
+.thread-item .t-del{position:absolute;top:6px;right:6px;background:transparent;border:none;color:var(--muted);font-size:.85rem;padding:2px 6px;border-radius:6px;opacity:.5}
+.thread-item:hover .t-del{opacity:1}
+.thread-item .t-del:hover{color:#fecaca;background:rgba(239,68,68,.15)}
+.limit-note{color:var(--muted);font-size:.72rem;text-align:center;padding:4px 0}
+.chat-panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 24px var(--shadow);display:flex;flex-direction:column;min-height:0}
+.chat-header{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.chat-header .who{color:var(--muted);font-size:.82rem}
+.chat-header .who strong{color:var(--text)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{max-width:88%;padding:11px 14px;border-radius:14px;line-height:1.45;font-size:.93rem;word-wrap:break-word}
+.msg.user{align-self:flex-end;background:var(--user-bg);border:1px solid var(--line);border-bottom-right-radius:4px}
+.msg.ai{align-self:flex-start;background:var(--ai-bg);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg .meta{display:block;color:var(--muted);font-size:.7rem;margin-top:6px}
+.msg-text{white-space:pre-wrap;word-wrap:break-word}
+.chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);gap:10px;padding:32px;text-align:center}
+.chat-empty h2{margin:0;color:var(--text);font-weight:800}.composer-wrap{border-top:1px solid var(--line)}
+.toolbar{display:flex;align-items:center;gap:6px;padding:8px 12px 0;flex-wrap:wrap}
+.tool-btn{background:transparent;border:1px solid var(--line);color:var(--text);font-size:1.05rem;padding:6px 10px;border-radius:8px;line-height:1;cursor:pointer}
+.tool-btn.active{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.55)}
+.pending-attach{color:var(--primary);font-size:.78rem;margin-left:4px}
+.recorder-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--line);background:rgba(239,68,68,.08)}
+.recorder-bar.hidden{display:none}
+.recorder-bar span{color:#fecaca;font-size:.85rem}
+.composer{border-top:1px solid var(--line);padding:10px 12px;display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-height:44px;max-height:160px;resize:none;background:#0b1220;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 13px;font-family:inherit;font-size:.94rem;outline:none}
+.composer textarea:focus{border-color:rgba(245,158,11,.5)}
+.msg-attachments{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.attach-image img{max-width:100%;max-height:280px;border-radius:10px;display:block}
+.attach-audio audio,.attach-video video{width:100%;max-width:320px;border-radius:10px}
+.attach-file a{color:#f9d38c;text-decoration:none;font-size:.88rem}
+.attach-missing{color:var(--muted);font-size:.8rem;font-style:italic}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:16px 0}
+.panel.hidden{display:none}
+.panel h3{margin:0 0 10px 0;font-size:1rem}
+.panel input[type="password"]{width:100%;background:#0b1220;border:1px solid var(--line);border-radius:10px;color:var(--text);padding:11px 13px;font-family:inherit;font-size:.94rem;outline:none}
+.button-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+@media (max-width:720px){.body-wrap{grid-template-columns:1fr}.sidebar{max-height:160px}.brand-subtitle{display:none}}
+</style>
 </head>
 <body>
-  <div id="app">
-    <header class="topbar">
-      <div class="brand-wrap">
-        <div class="brand-mark">🜂</div>
-        <div>
-          <div class="brand-title">BROD</div>
-          <div class="brand-subtitle" id="modelBadge">demo mode</div>
-        </div>
+<div id="app">
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-mark">🜂</div>
+      <div>
+        <div class="brand-title">BROD</div>
+        <div class="brand-subtitle" id="modelBadge">demo mode</div>
       </div>
-      <div class="header-actions">
-        <button id="settingsBtn" class="secondary-btn" type="button">Settings</button>
-        <button id="exportBtn" class="secondary-btn" type="button">Export</button>
-        <button id="newChatBtn" class="primary-btn" type="button">New chat</button>
-      </div>
-    </header>
-
-    <div id="settingsPanel" class="panel hidden">
-      <h3>Gemini API key</h3>
-      <p class="muted" style="font-size:.82rem;margin:0 0 10px 0;">
-        Paste your key from aistudio.google.com/apikey. It is stored only on this device.
-      </p>
-      <input id="apiKeyInput" type="password" placeholder="AIza..." autocomplete="off" />
-      <div class="button-row">
-        <button id="saveKeyBtn" class="primary-btn" type="button">Save</button>
-        <button id="clearKeyBtn" class="secondary-btn" type="button">Clear</button>
-      </div>
-      <p id="settingsStatus" class="muted" style="font-size:.8rem;margin-top:8px;"></p>
     </div>
-
-    <div class="body-wrap">
-      <aside class="sidebar">
-        <div class="sidebar-header">
-          <h3>THREADS</h3>
-          <span id="threadCount" class="limit-note"></span>
-        </div>
-        <div id="threadList" class="thread-list"></div>
-        <div id="limitNote" class="limit-note"></div>
-      </aside>
-
-      <main class="chat-panel">
-        <div class="chat-header">
-          <span class="who" id="chatWho">No chat selected</span>
-          <button id="deleteChatBtn" class="danger-btn" type="button" disabled>Delete</button>
-        </div>
-        <div id="chatMessages" class="chat-messages"></div>
-
-        <div id="recorderBar" class="recorder-bar hidden">
-          <span id="recorderStatus">Recording…</span>
-          <button id="stopRecordBtn" class="danger-btn" type="button">Stop</button>
-        </div>
-
-        <div class="composer-wrap">
-          <div class="toolbar">
-            <button id="micDictateBtn" class="tool-btn" type="button">🎤</button>
-            <button id="micRecordBtn"  class="tool-btn" type="button">🎙️</button>
-            <button id="photoBtn"      class="tool-btn" type="button">📷</button>
-            <button id="videoBtn"      class="tool-btn" type="button">🎥</button>
-            <button id="fileBtn"       class="tool-btn" type="button">📎</button>
-            <span id="pendingAttach" class="pending-attach"></span>
-          </div>
-          <div class="composer">
-            <textarea id="composerInput" rows="1" placeholder="Type a message…"></textarea>
-            <button id="sendBtn" class="primary-btn" type="button" disabled>Send</button>
-          </div>
-        </div>
-      </main>
+    <div class="header-actions">
+      <button id="settingsBtn" class="secondary-btn" type="button">Settings</button>
+      <button id="exportBtn" class="secondary-btn" type="button">Export</button>
+      <button id="newChatBtn" class="primary-btn" type="button">New chat</button>
     </div>
+  </header>
+
+  <div id="settingsPanel" class="panel hidden">
+    <h3>Gemini API key</h3>
+    <p style="color:var(--muted);font-size:.82rem;margin:0 0 10px 0">Paste your key from aistudio.google.com/apikey. It is stored only on this device.</p>
+    <input id="apiKeyInput" type="password" placeholder="AIza..." autocomplete="off" />
+    <div class="button-row">
+      <button id="saveKeyBtn" class="primary-btn" type="button">Save</button>
+      <button id="clearKeyBtn" class="secondary-btn" type="button">Clear</button>
+    </div>
+    <p id="settingsStatus" style="color:var(--muted);font-size:.8rem;margin-top:8px"></p>
   </div>
 
-  <input type="file" id="fileInput"  accept="*/*"     style="display:none" />
-  <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
-  <input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none" />
+  <div class="body-wrap">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h3>THREADS</h3>
+        <span id="threadCount" class="limit-note"></span>
+      </div>
+      <div id="threadList" class="thread-list"></div>
+      <div id="limitNote" class="limit-note"></div>
+    </aside>
 
-  <script src="./core/brod-conversation-contract.js"></script>
-  <script src="./core/brod-chat-store.js"></script>
-  <script src="./app.js"></script>
+    <main class="chat-panel">
+      <div class="chat-header">
+        <span class="who" id="chatWho">No chat selected</span>
+        <button id="deleteChatBtn" class="danger-btn" type="button" disabled>Delete</button>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div id="recorderBar" class="recorder-bar hidden">
+        <span id="recorderStatus">Recording…</span>
+        <button id="stopRecordBtn" class="danger-btn" type="button">Stop</button>
+      </div>
+      <div class="composer-wrap">
+        <div class="toolbar">
+          <button id="micDictateBtn" class="tool-btn" type="button">🎤</button>
+          <button id="micRecordBtn" class="tool-btn" type="button">🎙️</button>
+          <button id="photoBtn" class="tool-btn" type="button">📷</button>
+          <button id="videoBtn" class="tool-btn" type="button">🎥</button>
+          <button id="fileBtn" class="tool-btn" type="button">📎</button>
+          <span id="pendingAttach" class="pending-attach"></span>
+        </div>
+        <div class="composer">
+          <textarea id="composerInput" rows="1" placeholder="Type a message…"></textarea>
+          <button id="sendBtn" class="primary-btn" type="button" disabled>Send</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept="*/*" style="display:none" />
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
+<input type="file" id="videoInput" accept="video/*" capture="environment" style="display:none" />
+
+<script>
+'use strict';const BROD_CONVERSATION_CONTRACT = (function () {
+  const CONTRACT = {
+    name: 'BROD Conversation Contract',
+    version: '1.0.0',
+    opening: null,
+    addressRule: {
+      rule: 'Address is discovered, not assumed. The AI opens each new chat by asking who it is speaking with, holds the given name for the rest of that chat, and drops it when the chat closes.',
+      question: 'Who am I speaking with?',
+      fallbackWhenDeclined: 'you',
+      knownPresets: {
+        earl:  { name: 'Earl',  pronunciation: null, nickname: null },
+        alada: { name: 'Alada', pronunciation: 'uh-LAY-duh', nickname: 'Tater' }
+      }
+    },
+    posture: [
+      'Absorb correction instantly, with no defense.',
+      'No flattery. No performance.',
+      'Plain language is honored as plain.',
+      'Honesty over agreement.'
+    ],
+    disclosure: {
+      tiers: ['ESTABLISHED', 'VERIFIED', 'PLAUSIBLE', 'UNRESOLVED'],
+      rules: [
+        'Source named.',
+        'Translation named. Default NWT 1983.',
+        'Watchtower and JW.org first on any subject.',
+        'Disagreement shown, not flattened.',
+        'If it cannot be squared with the Watchtower, say so and hold it open.'
+      ]
+    },
+    boundaries: [
+      'Only what is pasted is known. No memory across chats.',
+      'No claiming possession of the holy spirit.',
+      'No personal opinion placed above Scripture.',
+      'No Trinity.',
+      'No crosses, icons, graven images, or religious symbols.',
+      'Miracles are real. State it plainly.',
+      'Never claim a security feature is implemented unless it is.',
+      'Never claim persistence when only volatile memory is available.',
+      'Never claim permissions or filesystem access merely because a path is configured.',
+      'Never treat a policy assertion as authentication.'
+    ],
+    silenceRule: 'If the user does not speak, remain silent. Do not fill silence with prompts.',
+    checkin: {
+      tone: 'direct, warm, brief',
+      crisisUS: [
+        '988 — Suicide and Crisis Lifeline (call or text, 24/7).',
+        '1-800-662-4357 — SAMHSA National Helpline (free, confidential, 24/7).'
+      ]
+    },
+    role: 'Listener that does not tire. Scribe, not author. Does not walk away.'
+  };
+
+  function createAddressState() {
+    return { asked:false, resolved:false, name:null, pronunciation:null, nickname:null, declined:false };
+  }
+  function askAddress() { return { question: CONTRACT.addressRule.question }; }
+  function setAddress(state, input) {
+    if (!state || typeof state !== 'object') return { ok:false, error:'STATE_REQUIRED' };
+    if (state.resolved) return { ok:false, error:'ADDRESS_ALREADY_RESOLVED' };
+    var raw = typeof input === 'string' ? input.trim() : '';
+    if (!raw) {
+      state.asked = true; state.resolved = true; state.declined = true; state.name = null;
+      return { ok:true, name:null, declined:true, fallback:'you' };
+    }
+    var preset = CONTRACT.addressRule.knownPresets[raw.toLowerCase()] || null;
+    state.asked = true; state.resolved = true; state.declined = false; state.name = raw;
+    state.pronunciation = preset ? preset.pronunciation : null;
+    state.nickname = preset ? preset.nickname : null;
+    return { ok:true, name:state.name, pronunciation:state.pronunciation, nickname:state.nickname, preset:Boolean(preset) };
+  }
+  function addressFor(state) {
+    if (!state || !state.resolved) return { ok:false, error:'ADDRESS_NOT_RESOLVED' };
+    if (state.declined || !state.name) return { ok:true, token:'you', style:'plain' };
+    return { ok:true, token:state.name, style:'named', pronunciation:state.pronunciation, nickname:state.nickname };
+  }
+  function scanResponse(text) {
+    if (typeof text !== 'string') return { ok:false, error:'TEXT_REQUIRED' };
+    var hits = [];
+    var patterns = [
+      { re:/i (remember|recall) (from|our) (last|previous) (chat|conversation)/i, rule:'No memory across chats.' },
+      { re:/i (have|possess) the holy spirit/i, rule:'No claiming possession of the holy spirit.' },
+      { re:/(my|the) (opinion|view) (is|stands) above scripture/i, rule:'No personal opinion placed above Scripture.' },
+      { re:/the trinity (is|proves|shows)/i, rule:'No Trinity.' }
+    ];
+    for (var i = 0; i < patterns.length; i++) {
+      var m = text.match(patterns[i].re);
+      if (m) hits.push({ rule: patterns[i].rule, match: m[0] });
+    }
+    return { ok:true, clean: hits.length === 0, hits: hits };
+  }
+  return Object.freeze({
+    CONTRACT: CONTRACT,
+    createAddressState: createAddressState,
+    askAddress: askAddress,
+    setAddress: setAddress,
+    addressFor: addressFor,
+    scanResponse: scanResponse
+  });
+})();const BROD_CHAT_STORE = (function () {
+  var CONFIG = Object.freeze({
+    storageKey: 'brod_chats_v1',
+    maxThreads: 20,
+    maxMessagesPerThread: 500,
+    maxMessageChars: 20000
+  });
+  function readAll() {
+    try {
+      var raw = localStorage.getItem(CONFIG.storageKey);
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) { return []; }
+  }
+  function writeAll(threads) { localStorage.setItem(CONFIG.storageKey, JSON.stringify(threads)); }
+  function nowIso() { return new Date().toISOString(); }
+  function newId() { return 'th_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+
+  function list() {
+    return readAll().slice()
+      .sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); })
+      .map(function (t) {
+        return {
+          id: t.id,
+          title: t.title || 'Untitled',
+          createdAt: t.createdAt,
+          updatedAt: t.updatedAt,
+          messageCount: (t.messages || []).length,
+          addressedTo: (t.address && t.address.name) || null
+        };
+      });
+  }
+  function count() { return readAll().length; }
+  function canCreate() { return count() < CONFIG.maxThreads; }
+
+  function create(opts) {
+    opts = opts || {};
+    var threads = readAll();
+    if (threads.length >= CONFIG.maxThreads) {
+      return { ok:false, error:'THREAD_LIMIT_REACHED', limit: CONFIG.maxThreads,
+               detail:'Maximum of ' + CONFIG.maxThreads + ' chat threads. Delete one to create another.' };
+    }
+    var thread = {
+      id: newId(),
+      title: (typeof opts.title === 'string' && opts.title.trim()) ? opts.title.trim() : 'New chat',
+      createdAt: nowIso(),
+      updatedAt: nowIso(),
+      address: { asked:false, resolved:false, name:null, pronunciation:null, nickname:null, declined:false },
+      messages: []
+    };
+    threads.push(thread);
+    writeAll(threads);
+    return { ok:true, thread: thread };
+  }
+  function get(id) {
+    var thread = readAll().find(function (t) { return t.id === id; });
+    if (!thread) return { ok:false, error:'THREAD_NOT_FOUND' };
+    return { ok:true, thread: thread };
+  }
+  function remove(id) {
+    var threads = readAll();
+    var next = threads.filter(function (t) { return t.id !== id; });
+    if (next.length === threads.length) return { ok:false, error:'THREAD_NOT_FOUND' };
+    writeAll(next);
+    return { ok:true, removedId: id, remaining: next.length };
+  }
+  function appendMessage(threadId, role, content, attachments) {
+    if (role !== 'user' && role !== 'ai' && role !== 'system') return { ok:false, error:'INVALID_ROLE' };
+    if (typeof content !== 'string' || !content) return { ok:false, error:'CONTENT_REQUIRED' };
+    if (content.length > CONFIG.maxMessageChars) return { ok:false, error:'MESSAGE_TOO_LONG' };
+    var threads = readAll();
+    var thread = threads.find(function (t) { return t.id === threadId; });
+    if (!thread) return { ok:false, error:'THREAD_NOT_FOUND' };
+    if ((thread.messages || []).length >= CONFIG.maxMessagesPerThread) return { ok:false, error:'THREAD_FULL' };
+    var message = { role: role, content: content, at: nowIso(), attachments: Array.isArray(attachments) ? attachments : [] };
+    thread.messages.push(message);
+    thread.updatedAt = message.at;
+    if (role === 'user' && thread.title === 'New chat') {
+      thread.title = content.slice(0, 60) + (content.length > 60 ? '…' : '');
+    }
+    writeAll(threads);
+    return { ok:true, message: message, threadTitle: thread.title };
+  }
+  function setThreadAddress(threadId, addressState) {
+    var threads = readAll();
+    var thread = threads.find(function (t) { return t.id === threadId; });
+    if (!thread) return { ok:false, error:'THREAD_NOT_FOUND' };
+    thread.address = Object.assign({}, addressState);
+    thread.updatedAt = nowIso();
+    writeAll(threads);
+    return { ok:true, address: thread.address };
+  }
+  function exportAll(opts) {
+    opts = opts || {};
+    var threads = readAll();
+    var redact = opts.redactSealed !== false;
+    if (!redact) return { ok:true, threads: threads };
+    return {
+      ok:true,
+      threads: threads.map(function (t) {
+        return Object.assign({}, t, {
+          messages: (t.messages || []).map(function (m) {
+            return m.sealed ? Object.assign({}, m, { content: '[REDACTED — SEALED]' }) : m;
+          })
+        });
+      })
+    };
+  }
+  function clearAll() { writeAll([]); return { ok:true, cleared:true }; }
+
+  return Object.freeze({
+    CONFIG: CONFIG,
+    list: list, count: count, canCreate: canCreate,
+    create: create, get: get, remove: remove, clearAll: clearAll,
+    appendMessage: appendMessage,
+    setThreadAddress: setThreadAddress,
+    exportAll: exportAll
+  });
+})();(function () {
+  var CONTRACT = BROD_CONVERSATION_CONTRACT;
+  var STORE    = BROD_CHAT_STORE;
+
+  var API_KEY_STORAGE = 'brod_gemini_key_v1';
+  var GEMINI_MODEL    = 'gemini-2.5-flash';
+  var GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
+
+  var ATTACH_DB = 'brod_attachments_v1';
+  var ATTACH_STORE = 'blobs';
+
+  function openAttachDb() {
+    return new Promise(function (resolve, reject) {
+      var req = indexedDB.open(ATTACH_DB, 1);
+      req.onupgradeneeded = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains(ATTACH_STORE)) {
+          db.createObjectStore(ATTACH_STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror   = function () { reject(req.error); };
+    });
+  }
+  function putBlob(id, blob, meta) {
+    return openAttachDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(ATTACH_STORE, 'readwrite');
+        tx.objectStore(ATTACH_STORE).put({ id: id, blob: blob, type: blob.type, size: blob.size, name: meta && meta.name ? meta.name : id });
+        tx.oncomplete = function () { resolve(true); };
+        tx.onerror    = function () { reject(tx.error); };
+      });
+    });
+  }
+  function getBlob(id) {
+    return openAttachDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var tx = db.transaction(ATTACH_STORE, 'readonly');
+        var req = tx.objectStore(ATTACH_STORE).get(id);
+        req.onsuccess = function () { resolve(req.result || null); };
+        req.onerror   = function () { reject(req.error); };
+      });
+    });
+  }
+
+  var el = {
+    threadList: document.getElementById('threadList'),
+    threadCount: document.getElementById('threadCount'),
+    limitNote: document.getElementById('limitNote'),
+    chatWho: document.getElementById('chatWho'),
+    chatMessages: document.getElementById('chatMessages'),
+    composerInput: document.getElementById('composerInput'),
+    sendBtn: document.getElementById('sendBtn'),
+    newChatBtn: document.getElementById('newChatBtn'),
+    deleteChatBtn: document.getElementById('deleteChatBtn'),
+    exportBtn: document.getElementById('exportBtn'),
+    settingsBtn: document.getElementById('settingsBtn'),
+    settingsPanel: document.getElementById('settingsPanel'),
+    apiKeyInput: document.getElementById('apiKeyInput'),
+    saveKeyBtn: document.getElementById('saveKeyBtn'),
+    clearKeyBtn: document.getElementById('clearKeyBtn'),
+    settingsStatus: document.getElementById('settingsStatus'),
+    modelBadge: document.getElementById('modelBadge'),
+    micDictateBtn: document.getElementById('micDictateBtn'),
+    micRecordBtn: document.getElementById('micRecordBtn'),
+    photoBtn: document.getElementById('photoBtn'),
+    videoBtn: document.getElementById('videoBtn'),
+    fileBtn: document.getElementById('fileBtn'),
+    fileInput: document.getElementById('fileInput'),
+    photoInput: document.getElementById('photoInput'),
+    videoInput: document.getElementById('videoInput'),
+    recorderBar: document.getElementById('recorderBar'),
+    recorderStatus: document.getElementById('recorderStatus'),
+    stopRecordBtn: document.getElementById('stopRecordBtn'),
+    pendingAttach: document.getElementById('pendingAttach')
+  };
+
+  var ui = {
+    activeThreadId: null,
+    pendingAttachment: null,
+    recorder: null,
+    recorderChunks: [],
+    blobUrls: {},
+    recognition: null,
+    dictating: false,
+    sending: false
+  };
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function fmtTime(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }); }
+    catch (_) { return ''; }
+  }
+  function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(1) + ' MB';
+  }
+  function newAttachId() { return 'at_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8); }
+  function showRecorder(status, show) {
+    el.recorderStatus.textContent = status || 'Recording…';
+    el.recorderBar.classList.toggle('hidden', !show);
+  }
+  function setPendingAttachment(attach) {
+    ui.pendingAttachment = attach || null;
+    el.pendingAttach.textContent = attach ? ('· ' + attach.kind + ' ready') : '';
+  }
+
+  function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
+  function setApiKey(key) { localStorage.setItem(API_KEY_STORAGE, key.trim()); updateModelBadge(); }
+  function clearApiKey() { localStorage.removeItem(API_KEY_STORAGE); updateModelBadge(); }
+  function updateModelBadge() {
+    el.modelBadge.textContent = getApiKey() ? 'Gemini ' + GEMINI_MODEL : 'demo mode';
+  }
+
+  function buildSystemPrompt(addressName) {
+    return [
+      'You are BROD.',
+      'Role: ' + CONTRACT.CONTRACT.role,
+      'Address rule: ' + CONTRACT.CONTRACT.addressRule.rule,
+      addressName ? ('Current addressee name: ' + addressName + '. Use it naturally, not mechanically.') : 'Addressee name not yet established. Do not invent one.',
+      'Posture: ' + CONTRACT.CONTRACT.posture.join(' '),
+      'Disclosure: ' + CONTRACT.CONTRACT.disclosure.rules.join(' '),
+      'Boundaries: ' + CONTRACT.CONTRACT.boundaries.join(' '),
+      'Silence rule: ' + CONTRACT.CONTRACT.silenceRule
+    ].join('\n\n');
+  }
+  function buildHistory(thread) {
+    var msgs = thread.messages || [];
+    var out = [];
+    for (var i = 0; i < msgs.length; i++) {
+      var m = msgs[i];
+      if (!m.content || !m.content.trim()) continue;
+      if (m.content.indexOf('Who am I speaking with?') === 0) continue;
+      out.push({ role: m.role === 'user' ? 'user' : 'model', parts: [{ text: m.content }] });
+    }
+    while (out.length && out[out.length - 1].role === 'user') out.pop();
+    if (out.length && out[0].role !== 'user') out.shift();
+    return out.slice(-20);
+  }
+  function callGemini(systemPrompt, history) {
+    var key = getApiKey();
+    if (!key) return Promise.resolve({ ok:false, error:'NO_API_KEY', message:'Open Settings and paste your Gemini API key.' });
+    var url = GEMINI_ENDPOINT + GEMINI_MODEL + ':generateContent?key=' + encodeURIComponent(key);
+    var body = {
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: history,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+    };
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (res) {
+      if (!res.ok) {
+        return res.text().then(function (errText) {
+          var detail = errText.slice(0, 300);
+          try { var j = JSON.parse(errText); if (j.error && j.error.message) detail = j.error.message; } catch (_) {}
+          return { ok:false, error:'API_ERROR', message: detail, status: res.status };
+        });
+      }
+      return res.json().then(function (data) {
+        var candidate = data.candidates && data.candidates[0];
+        var text = candidate && candidate.content && candidate.content.parts
+          ? candidate.content.parts.map(function (p) { return p.text || ''; }).join('') : '';
+        if (!text) {
+          var block = candidate && candidate.finishReason ? candidate.finishReason : 'unknown';
+          return { ok:false, error:'EMPTY_RESPONSE', message:'No text returned (finishReason: ' + block + ')' };
+        }
+        return { ok:true, text: text };
+      });
+    }).catch(function (e) {
+      return { ok:false, error:'NETWORK_ERROR', message: e.message || 'Could not reach Gemini.' };
+    });
+                         }  function renderThreads() {
+    var threads = STORE.list();
+    el.threadCount.textContent = STORE.count() + ' / ' + STORE.CONFIG.maxThreads;
+    if (threads.length === 0) {
+      el.threadList.innerHTML = '<div class="chat-empty" style="padding:20px;font-size:.82rem;">No threads yet. Tap <strong>New chat</strong>.</div>';
+    } else {
+      el.threadList.innerHTML = threads.map(function (t) {
+        var active = t.id === ui.activeThreadId ? ' active' : '';
+        var who = t.addressedTo ? ('· ' + esc(t.addressedTo)) : '';
+        return '<div class="thread-item' + active + '" data-id="' + esc(t.id) + '">' +
+               '<div class="t-title">' + esc(t.title) + '</div>' +
+               '<div class="t-meta">' + t.messageCount + ' msg ' + who + '</div>' +
+               '<button class="t-del" type="button" data-del="' + esc(t.id) + '">✕</button>' +
+               '</div>';
+      }).join('');
+    }
+    el.limitNote.textContent = STORE.canCreate() ? '' : 'Thread limit reached.';
+    el.newChatBtn.disabled = !STORE.canCreate();
+  }
+
+  function attachmentHtml(att) {
+    return new Promise(function (resolve) {
+      if (!att) { resolve(''); return; }
+      var url = ui.blobUrls[att.id];
+      if (url) { resolve(renderAttach(url, att)); return; }
+      getBlob(att.id).then(function (stored) {
+        if (stored && stored.blob) {
+          var u = URL.createObjectURL(stored.blob);
+          ui.blobUrls[att.id] = u;
+          resolve(renderAttach(u, att));
+        } else {
+          resolve('<div class="attach attach-missing"><span>' + esc(att.kind) + ' (unavailable)</span></div>');
+        }
+      }).catch(function () { resolve('<div class="attach attach-missing"><span>' + esc(att.kind) + ' (unavailable)</span></div>'); });
+    });
+  }
+  function renderAttach(url, att) {
+    var sizeStr = att.size ? fmtSize(att.size) : '';
+    if (att.kind === 'image') return '<div class="attach attach-image"><img src="' + url + '" alt="attachment" /></div>';
+    if (att.kind === 'audio') return '<div class="attach attach-audio"><audio controls src="' + url + '"></audio></div>';
+    if (att.kind === 'video') return '<div class="attach attach-video"><video controls src="' + url + '"></video></div>';
+    return '<div class="attach attach-file"><a href="' + url + '" download="' + esc(att.name || 'file') + '">📎 ' + esc(att.name || att.kind) + ' · ' + sizeStr + '</a></div>';
+  }
+
+  function renderChat() {
+    if (!ui.activeThreadId) {
+      el.chatWho.textContent = 'No chat selected';
+      el.chatMessages.innerHTML = '<div class="chat-empty"><h2>BROD</h2><p>Public model. It asks who it is speaking with,<br>holds the name for that chat, and drops it when the chat closes.</p><p>Tap <strong>New chat</strong> to begin.</p></div>';
+      el.sendBtn.disabled = true;
+      el.composerInput.disabled = true;
+      el.deleteChatBtn.disabled = true;
+      return Promise.resolve();
+    }
+    var r = STORE.get(ui.activeThreadId);
+    if (!r.ok) { ui.activeThreadId = null; return renderChat(); }
+    var thread = r.thread;
+    var addr = thread.address || CONTRACT.createAddressState();
+    el.chatWho.innerHTML = addr.resolved
+      ? (addr.name ? 'Speaking with <strong>' + esc(addr.name) + '</strong>' : 'Speaking plainly')
+      : 'Address not yet established';
+
+    var msgs = thread.messages || [];
+    if (msgs.length === 0) {
+      el.chatMessages.innerHTML = '<div class="chat-empty"><p>Empty thread.</p></div>';
+      el.sendBtn.disabled = false;
+      el.composerInput.disabled = false;
+      el.deleteChatBtn.disabled = false;
+      return Promise.resolve();
+    }
+    return Promise.all(msgs.map(function (m) {
+      var cls = m.role === 'user' ? 'user' : 'ai';
+      var label = m.role === 'user' ? 'You' : 'BROD';
+      var attachPromises = (m.attachments || []).map(attachmentHtml);
+      return Promise.all(attachPromises).then(function (parts) {
+        var body = '';
+        if (parts.length) body += '<div class="msg-attachments">' + parts.join('') + '</div>';
+        if (m.content) body += '<div class="msg-text">' + esc(m.content) + '</div>';
+        return '<div class="msg ' + cls + '">' + body + '<span class="meta">' + label + ' · ' + fmtTime(m.at) + '</span></div>';
+      });
+    })).then(function (rendered) {
+      el.chatMessages.innerHTML = rendered.join('');
+      el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
+      el.sendBtn.disabled = false;
+      el.composerInput.disabled = false;
+      el.deleteChatBtn.disabled = false;
+    });
+  }
+
+  function send() {
+    if (!ui.activeThreadId || ui.sending) return;
+    var text = el.composerInput.value.trim();
+    var pending = ui.pendingAttachment;
+    if (!text && !pending) return;
+
+    var threadId = ui.activeThreadId;
+    var attachments = pending ? [pending] : [];
+    STORE.appendMessage(threadId, 'user', text || '[attachment]', attachments);
+
+    var r = STORE.get(threadId);
+    var thread = r.thread;
+    var addr = thread.address || CONTRACT.createAddressState();
+
+    var justResolved = false;
+    var resolvedToken = null;
+    if (!addr.resolved && text) {
+      CONTRACT.setAddress(addr, text);
+      STORE.setThreadAddress(threadId, addr);
+      r = STORE.get(threadId);
+      thread = r.thread;
+      justResolved = true;
+      resolvedToken = CONTRACT.addressFor(addr).token || 'you';
+    }
+
+    el.composerInput.value = '';
+    el.composerInput.style.height = 'auto';
+    setPendingAttachment(null);
+    renderThreads();
+
+    if (justResolved) {
+      STORE.appendMessage(threadId, 'ai', 'Hello, ' + resolvedToken + '. What would you like to talk about?', []);
+      renderThreads();
+      renderChat();
+      return;
+    }
+
+    renderChat().then(function () {
+      ui.sending = true;
+      el.sendBtn.disabled = true;
+      el.sendBtn.textContent = '…';
+      el.chatMessages.insertAdjacentHTML('beforeend', '<div class="msg ai" id="thinking"><span class="meta">BROD is thinking…</span></div>');
+      el.chatMessages.scrollTop = el.chatMessages.scrollHeight;
+
+      var r2 = STORE.get(threadId);
+      var systemPrompt = buildSystemPrompt(r2.thread.address && r2.thread.address.name);
+      var history = buildHistory(r2.thread);
+      callGemini(systemPrompt, history).then(function (result) {
+        var t = document.getElementById('thinking');
+        if (t) t.remove();
+        var replyText;
+        if (!result.ok) {
+          replyText = result.error === 'NO_API_KEY'
+            ? 'No Gemini API key set. Tap Settings and paste one.'
+            : 'Gemini error: ' + (result.message || result.error);
+        } else {
+          replyText = result.text;
+          var scan = CONTRACT.scanResponse(result.text);
+          if (!scan.clean) {
+            replyText = '[contract flag: ' + scan.hits.map(function (h) { return h.rule; }).join(' ') + ']\n\n' + replyText;
+          }
+        }
+        STORE.appendMessage(threadId, 'ai', replyText, []);
+        ui.sending = false;
+        el.sendBtn.disabled = false;
+        el.sendBtn.textContent = 'Send';
+        renderThreads();
+        renderChat();
+      });
+    });
+  }
+
+  function newChat() {
+    var r = STORE.create();
+    if (!r.ok) { alert('Thread limit reached. Delete one.'); return; }
+    ui.activeThreadId = r.thread.id;
+    STORE.appendMessage(r.thread.id, 'ai', CONTRACT.askAddress().question, []);
+    renderThreads();
+    renderChat();
+    el.composerInput.focus();
+  }
+  function selectThread(id) { ui.activeThreadId = id; renderThreads(); renderChat(); el.composerInput.focus(); }
+  function deleteThread(id) {
+    if (!confirm('Delete this thread?')) return;
+    STORE.remove(id);
+    if (ui.activeThreadId === id) ui.activeThreadId = null;
+    setPendingAttachment(null);
+    renderThreads();
+    renderChat();
+  }
+  function exportAll() {
+    var r = STORE.exportAll({ redactSealed: true });
+    if (!r.ok) { alert('Export failed.'); return; }
+    var blob = new Blob([JSON.stringify(r, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'brod-export.json'; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function startDictation() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Speech recognition not supported.'); return; }
+    if (ui.dictating) return;
+    var rec = new SR();
+    rec.continuous = true; rec.interimResults = true; rec.lang = 'en-US';
+    var base = el.composerInput.value;
+    rec.onresult = function (e) {
+      var interim = '', final = '';
+      for (var i = e.resultIndex; i < e.results.length; i++) {
+        var t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) final += t; else interim += t;
+      }
+      el.composerInput.value = (base + ' ' + final + interim).trim();
+      if (final) base = el.composerInput.value;
+    };
+    rec.onerror = function () { stopDictation(); };
+    rec.onend   = function () { ui.dictating = false; el.micDictateBtn.classList.remove('active'); };
+    ui.recognition = rec; ui.dictating = true;
+    el.micDictateBtn.classList.add('active');
+    rec.start();
+  }
+  function stopDictation() {
+    if (ui.recognition) { try { ui.recognition.stop(); } catch (_) {} }
+    ui.dictating = false; ui.recognition = null;
+    el.micDictateBtn.classList.remove('active');
+  }
+
+  function startRecording(kind) {
+    navigator.mediaDevices.getUserMedia(
+      kind === 'video' ? { audio: true, video: { facingMode: 'environment' } } : { audio: true }
+    ).then(function (stream) {
+      var mime = kind === 'video'
+        ? (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus') ? 'video/webm;codecs=vp8,opus' : 'video/webm')
+        : (MediaRecorder.isTypeSupported('audio/webm;codecs=opus') ? 'audio/webm;codecs=opus' : 'audio/webm');
+      var rec = new MediaRecorder(stream, { mimeType: mime });
+      ui.recorderChunks = [];
+      rec.ondataavailable = function (e) { if (e.data && e.data.size) ui.recorderChunks.push(e.data); };
+      rec.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        var blob = new Blob(ui.recorderChunks, { type: mime.split(';')[0] });
+        if (blob.size > 0) {
+          var id = newAttachId();
+          var kindLabel = kind === 'video' ? 'video' : 'audio';
+          putBlob(id, blob, { name: kindLabel + '-' + id }).then(function () {
+            setPendingAttachment({ id: id, kind: kindLabel, mime: blob.type, size: blob.size });
+          }).catch(function () { alert('Could not store attachment.'); });
+        }
+        showRecorder('', false);
+        ui.recorder = null;
+      };
+      rec.start();
+      ui.recorder = rec;
+      showRecorder(kind === 'video' ? 'Recording video… tap Stop when done.' : 'Recording audio… tap Stop when done.', true);
+    }).catch(function () { alert('Microphone / camera permission denied.'); });
+  }
+  function stopRecording() {
+    if (ui.recorder && ui.recorder.state !== 'inactive') { try { ui.recorder.stop(); } catch (_) {} }
+  }
+
+  function handleFilePicked(file) {
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) { alert('File too large (max 20 MB).'); return; }
+    var id = newAttachId();
+    var kind = file.type.indexOf('image/') === 0 ? 'image'
+             : file.type.indexOf('video/') === 0 ? 'video'
+             : file.type.indexOf('audio/') === 0 ? 'audio' : 'file';
+    putBlob(id, file, { name: file.name }).then(function () {
+      setPendingAttachment({ id: id, kind: kind, mime: file.type, size: file.size, name: file.name });
+    }).catch(function () { alert('Could not store attachment.'); });
+  }
+
+  el.newChatBtn.addEventListener('click', newChat);
+  el.sendBtn.addEventListener('click', send);
+  el.exportBtn.addEventListener('click', exportAll);
+  el.deleteChatBtn.addEventListener('click', function () { if (ui.activeThreadId) deleteThread(ui.activeThreadId); });
+
+  el.settingsBtn.addEventListener('click', function () {
+    el.settingsPanel.classList.toggle('hidden');
+    if (!el.settingsPanel.classList.contains('hidden')) {
+      el.apiKeyInput.value = getApiKey();
+      el.settingsStatus.textContent = getApiKey() ? 'A key is saved.' : 'No key saved yet.';
+    }
+  });
+  el.saveKeyBtn.addEventListener('click', function () {
+    var v = el.apiKeyInput.value.trim();
+    if (!v) { el.settingsStatus.textContent = 'Enter a key first.'; return; }
+    setApiKey(v);
+    el.settingsStatus.textContent = 'Saved.';
+    el.apiKeyInput.value = '';
+  });
+  el.clearKeyBtn.addEventListener('click', function () {
+    clearApiKey();
+    el.apiKeyInput.value = '';
+    el.settingsStatus.textContent = 'Key cleared.';
+  });
+
+  el.micDictateBtn.addEventListener('click', function () { if (ui.dictating) stopDictation(); else startDictation(); });
+  el.micRecordBtn.addEventListener('click', function () { if (ui.recorder) stopRecording(); else startRecording('audio'); });
+  el.photoBtn.addEventListener('click', function () { el.photoInput.click(); });
+  el.videoBtn.addEventListener('click', function () { el.videoInput.click(); });
+  el.fileBtn.addEventListener('click',  function () { el.fileInput.click(); });
+  el.stopRecordBtn.addEventListener('click', stopRecording);
+
+  el.photoInput.addEventListener('change', function (e) { handleFilePicked(e.target.files[0]); e.target.value = ''; });
+  el.videoInput.addEventListener('change', function (e) { handleFilePicked(e.target.files[0]); e.target.value = ''; });
+  el.fileInput.addEventListener('change',  function (e) { handleFilePicked(e.target.files[0]); e.target.value = ''; });
+
+  el.threadList.addEventListener('click', function (e) {
+    var del = e.target.closest('[data-del]');
+    if (del) { e.stopPropagation(); deleteThread(del.getAttribute('data-del')); return; }
+    var item = e.target.closest('.thread-item');
+    if (item) selectThread(item.getAttribute('data-id'));
+  });
+  el.composerInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+  el.composerInput.addEventListener('input', function () {
+    el.composerInput.style.height = 'auto';
+    el.composerInput.style.height = Math.min(el.composerInput.scrollHeight, 160) + 'px';
+  });
+
+  updateModelBadge();
+  renderThreads();
+  renderChat();
+})();
+</script>
 </body>
 </html>
